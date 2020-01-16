@@ -17,7 +17,7 @@ class GetFoodFromTimeline extends Component {
     }
 
     componentDidMount() {
-        Axios.get(config.get('server_path')+'/food/'+decode(localStorage.getItem('user')).id+'/'+this.props.foodId)
+        Axios.get(config.get('server_path')+'/food/'+this.props.foodId)
             .then(res => {
                 if (res.data.success) {
                     this.setState({food: res.data.food})
