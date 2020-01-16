@@ -10,7 +10,9 @@ class GetFoodFromTimeline extends Component {
 
         this.state = {
             food: null,
-            userId: decode(localStorage.getItem('user'))._id
+            userId: decode(localStorage.getItem('user'))._id,
+            liked: null,
+            unliked: null
         }
     }
 
@@ -26,13 +28,20 @@ class GetFoodFromTimeline extends Component {
     }
 
     likeFood = () => {
-        Axios.get(config.get('server_path')+'/food/like/'+this.props.foodId+'/'+decode(localStorage.getItem('user'))._id)
+        console.log('like clicked ' + this.props.foodId)
+        Axios.get(config.get('server_path')+'/food/like/'+this.props.foodId+'/'+decode(localStorage.getItem('user')).id)
             .then(res => {
-                console.log(res.data.success)
+                console.log(res.data.success+' liked...')
             })
             .catch(err => console.log(err))
     }
-
+    unlikeFood = () => {
+        Axios.get(config.get('server_path')+'/food/unlike/'+this.props.foodId+'/'+decode(localStorage.getItem('user'))._id)
+            .then(res => {
+                console.log(res.data.success+' unliked...')
+            })
+            .catch(err => console.log(err))
+    }
     render() {
         return(
             <React.Fragment>
@@ -55,7 +64,18 @@ class GetFoodFromTimeline extends Component {
 
     activities() {
         return <div>
-            <Button onClick={this.likeFood()} className="btn btn-success btn-sm" >like</Button>
+            {this.state.food.likes.map((l, key) => <div key={key}>
+                {(decode(localStorage.getItem('user')).id === l.user) ? 
+                    (this.setState({liked: true, unliked: false}))
+                    :
+                    (this.setState({unliked: true, liked: false}))
+                }
+            </div>)}
+            {this.state.liked ? 
+                (<Button onClick={this.unlikeFood} className="btn btn-success btn-sm" >unlike</Button>)
+                :
+                (<Button onClick={this.likeFood} className="btn btn-success btn-sm" >like</Button>            )
+            }            
         </div>
     }
 
