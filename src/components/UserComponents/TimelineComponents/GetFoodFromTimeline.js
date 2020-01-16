@@ -9,7 +9,8 @@ class GetFoodFromTimeline extends Component {
         super(props)
 
         this.state = {
-            food: null
+            food: null,
+            userId: decode(localStorage.getItem('user'))._id
         }
     }
 
@@ -24,21 +25,68 @@ class GetFoodFromTimeline extends Component {
             .catch(err => console.log(err))
     }
 
+    likeFood = () => {
+        Axios.get(config.get('server_path')+'/food/like/'+this.props.foodId+'/'+decode(localStorage.getItem('user'))._id)
+            .then(res => {
+                console.log(res.data.success)
+            })
+            .catch(err => console.log(err))
+    }
+
     render() {
         return(
             <React.Fragment>
-                {this.state.food ? 
-                    (
-                        <React.Fragment>
-                            <h1>{this.state.food.name}</h1>
-                            <Button onClick={this.props.closeViewFood} >close</Button>
-                        </React.Fragment>
-                    )
-                    :
-                    (null)
-                }
+                <div className="container">
+                    {this.state.food ? 
+                        (
+                            <React.Fragment>
+                                {this.foodRecipe()}
+                                {this.activities()}
+                                {this.buttons()}                                                           
+                            </React.Fragment>
+                        )
+                        :
+                        (null)
+                    }
+                </div>
             </React.Fragment>
         )
+    }
+
+    activities() {
+        return <div>
+            <Button onClick={this.likeFood()} className="btn btn-success btn-sm" >like</Button>
+        </div>
+    }
+
+    buttons() {
+        return <div>
+            <Button onClick={this.props.closeViewFood}>Close</Button>
+        </div>
+    }
+
+    foodRecipe() {
+        return <div className="foodRecipe">
+            <h2>{this.state.food.name}</h2>
+            <h6>- {this.state.food.cusine.name} ({this.state.food.category.veg ? 'pure veg' : 'pure non-veg'} {this.getFoodSpecialCategory()})</h6>
+            <hr />
+            <h6>Ingredients:</h6>
+            <ol>
+                {this.state.food.ingredients.map((i, key) => (<li key={key}>{i.ing.name} <i>{i.quantity} {i.unit}</i></li>))}
+            </ol>
+            {this.state.food.servings ? (<b>Servings: {this.state.food.servings}</b>) : (null)}
+            <h5>Steps: </h5>
+            <ol>
+                {this.state.food.recipe.step ?
+                    (<React.Fragment>
+                        {this.state.food.recipe.step.map((s, key1) => (<li key={key1}> {s.description}</li>))}
+                    </React.Fragment>) : (null)}
+            </ol>
+        </div>;
+    }
+
+    getFoodSpecialCategory() {
+        return <span>{this.state.food.category.special.Jain ? ('| Jain') : (this.state.food.category.special.swaminarayan ? ('| Swaminarayan') : (this.state.food.category.special.faradi ? ('| Faradi') : (null)))}</span>;
     }
 }
 
