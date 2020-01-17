@@ -17,6 +17,7 @@ class GetFoodFromTimeline extends Component {
             foodId: this.props.foodId,
             userId: decode(localStorage.getItem('user')).id,
             liked: null,
+            fav: null,
             msg: null
         }
     }
@@ -31,6 +32,20 @@ class GetFoodFromTimeline extends Component {
                         this.setState({liked: true})
                     } else {
                         this.setState({liked: false})
+                    }
+                    var tempFav = null
+                    for (let i = 0; i < res.data.food.user.favourites.length; i++) {
+                        const fav = res.data.food.user.favourites[i];
+                        if (fav.food === this.state.foodId) {
+                            tempFav = true
+                        } else {
+                            tempFav = false
+                        }
+                    }
+                    if (tempFav) {
+                        this.setState({fav: true})
+                    } else {
+                        this.setState({fav: false})
                     }
                 }
             })
@@ -51,6 +66,30 @@ class GetFoodFromTimeline extends Component {
 
     dislikeRecipe = () => {
         Axios.get(config.get('server_path')+'/food/dislike/'+this.state.foodId+'/'+this.state.userId)
+            .then(res => {
+                if (res.data.success) {
+                    console.log(res.data)
+                    this.setState({msg: res.data.msg})
+                    this.componentDidMount()
+                }
+            })
+            .catch(err => console.log(err))
+    }
+
+    addToFav = () => {
+        Axios.get(config.get('server_path')+'/food/addToFav/'+this.state.foodId+'/'+this.state.userId)
+            .then(res => {
+                if (res.data.success) {
+                    console.log(res.data)
+                    this.setState({msg: res.data.msg})
+                    this.componentDidMount()
+                }
+            })
+            .catch(err => console.log(err))
+    }
+
+    removeFromFav = () => {
+        Axios.get(config.get('server_path')+'/food/removeFromFav/'+this.state.foodId+'/'+this.state.userId)
             .then(res => {
                 if (res.data.success) {
                     console.log(res.data)
@@ -90,8 +129,11 @@ class GetFoodFromTimeline extends Component {
                 :
                 (<AiOutlineLike color="grey" onClick={this.likeRecipe} cursor="pointer" fontSize="35"></AiOutlineLike>)
             }
-            <FaRegHeart color="grey" cursor="pointer" fontSize="35"></FaRegHeart>
-            <FaHeart color="red" cursor="pointer" fontSize="35"></FaHeart>
+            {this.state.fav ? 
+                (<FaHeart color="red" cursor="pointer" fontSize="35" onClick={this.removeFromFav}></FaHeart>)
+                :
+                (<FaRegHeart color="grey" cursor="pointer" fontSize="35" onClick={this.addToFav}></FaRegHeart>)
+            }            
             <MdArrowBack onClick={this.props.closeViewFood} cursor="pointer" fontSize="35"></MdArrowBack>            
         </div>;
     }
