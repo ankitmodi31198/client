@@ -16,6 +16,7 @@ class GetFoodFromTimeline extends Component {
             food: null,
             foodId: this.props.foodId,
             userId: decode(localStorage.getItem('user')).id,
+            user: null,
             liked: null,
             fav: null,
             msg: null
@@ -33,20 +34,24 @@ class GetFoodFromTimeline extends Component {
                     } else {
                         this.setState({liked: false})
                     }
-                    var tempFav = null
-                    for (let i = 0; i < res.data.food.user.favourites.length; i++) {
-                        const fav = res.data.food.user.favourites[i];
-                        if (fav.food === this.state.foodId) {
-                            tempFav = true
-                        } else {
-                            tempFav = false
-                        }
-                    }
-                    if (tempFav) {
-                        this.setState({fav: true})
-                    } else {
-                        this.setState({fav: false})
-                    }
+                    Axios.get(config.get('server_path')+'/user/'+this.state.userId)
+                        .then(res1 => {
+                            var tempFav = null
+                            for (let i = 0; i < res1.data.user.favourites.length; i++) {
+                                const fav = res1.data.user.favourites[i];
+                                if (fav.food === this.state.foodId) {
+                                    tempFav = true
+                                } else {
+                                    tempFav = false
+                                }
+                            }
+                            if (tempFav) {
+                                this.setState({fav: true})
+                            } else {
+                                this.setState({fav: false})
+                            }
+                        })
+                        .catch(e => console.log(e))                    
                 }
             })
             .catch(err => console.log(err))        
@@ -117,25 +122,49 @@ class GetFoodFromTimeline extends Component {
     foodView() {
         return <div className="container">
             {this.state.msg ? (<Alert color="success">{this.state.msg}</Alert>):(null)}
-            <h1>{this.state.food.name}</h1>
+            {this.showFoodRecipe()}            
+        </div>;
+    }
+
+    showFoodRecipe() {
+        return <div>
+            <h2>{this.state.food.name}</h2>
+            <h6>- {this.state.food.cusine.name} ({this.state.food.category.veg ? 'pure veg' : 'pure non-veg'} {this.getFoodSpecialCategory()})</h6>
             {this.activities()}
+            <hr />
+            <h6>Ingredients:</h6>
+            <ol>
+                {this.state.food.ingredients.map((i, key) => (<li key={key}>{i.ing.name} <i>{i.quantity} {i.unit}</i></li>))}
+            </ol>
+            {this.state.food.servings ? (<b>Servings: {this.state.food.servings}</b>) : (null)}
+            <h5>Steps: </h5>
+            <ol>
+                {this.state.food.recipe.step ?
+                    (<React.Fragment>
+                        {this.state.food.recipe.step.map((s, key1) => (<li key={key1}> {s.description}</li>))}
+                    </React.Fragment>) : (null)}
+            </ol>
         </div>;
     }
 
     activities() {
         return <div>
             {this.state.liked ? 
-                (<AiTwotoneLike color="blue" onClick={this.dislikeRecipe} cursor="pointer" fontSize="35"></AiTwotoneLike>)
+                (<AiTwotoneLike color="blue" onClick={this.dislikeRecipe} cursor="pointer" fontSize="25"></AiTwotoneLike>)
                 :
-                (<AiOutlineLike color="grey" onClick={this.likeRecipe} cursor="pointer" fontSize="35"></AiOutlineLike>)
+                (<AiOutlineLike color="grey" onClick={this.likeRecipe} cursor="pointer" fontSize="25"></AiOutlineLike>)
             }
             {this.state.fav ? 
-                (<FaHeart color="red" cursor="pointer" fontSize="35" onClick={this.removeFromFav}></FaHeart>)
+                (<FaHeart color="red" cursor="pointer" fontSize="25" onClick={this.removeFromFav}></FaHeart>)
                 :
-                (<FaRegHeart color="grey" cursor="pointer" fontSize="35" onClick={this.addToFav}></FaRegHeart>)
+                (<FaRegHeart color="grey" cursor="pointer" fontSize="25" onClick={this.addToFav}></FaRegHeart>)
             }            
-            <MdArrowBack onClick={this.props.closeViewFood} cursor="pointer" fontSize="35"></MdArrowBack>            
+            <MdArrowBack onClick={this.props.closeViewFood} cursor="pointer" fontSize="25"></MdArrowBack>            
         </div>;
+    }
+
+    getFoodSpecialCategory() {
+        return <span>{this.state.food.category.special.Jain ? ('| Jain') : (this.state.food.category.special.swaminarayan ? ('| Swaminarayan') : (this.state.food.category.special.faradi ? ('| Faradi') : (null)))}</span>;
     }
 }
 

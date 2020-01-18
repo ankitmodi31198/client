@@ -3,6 +3,7 @@ import Axios from 'axios'
 import {Redirect} from 'react-router-dom'
 import config from 'react-global-configuration'
 import {Jumbotron, Button} from 'reactstrap'
+
 import GetFoodFromTimeline from './TimelineComponents/GetFoodFromTimeline'
 
 class Timeline extends Component {

@@ -4,15 +4,19 @@ import {Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Row
 import decode from 'jwt-decode'
 import Axios from 'axios';
 import config from 'react-global-configuration'
+import {FaHeart} from 'react-icons/fa'
 
 // components
 import EditProfile from './ProfileComponents/EditProfile';
+import MyFavourites from './ProfileComponents/MyFavourites';
 
 class Profile extends Component {
     state = {
         editClicked: false,
         authenticate: true,
+        viewFavourites: false,
         decoded: {},
+        userFavourites: null,
         user: {
             cred: {
                 username: '',
@@ -56,12 +60,13 @@ class Profile extends Component {
         }
     }
     loadData = () => {        
-        Axios.get(config.get('server_path')+'/user/'+this.state.decoded.id)
+        Axios.get(config.get('server_path')+'/user/getUserWithFavouriteFood/'+this.state.decoded.id)
             .then(res => {
                 console.log(res.data)
                 this.setState({user: res.data.user}, () => console.log(this.state))
+                this.setState({userFavourites: res.data.user.favourites}, () => console.log(this.state.userFavourites))
             })
-            .catch(err => console.log(err))
+            .catch(err => console.log(err))        
     }
     editClicked = () => {
         this.setState({editClicked: true})
@@ -69,6 +74,12 @@ class Profile extends Component {
     backClicked = () => {
         this.setState({editClicked: false})
         this.componentDidMount()
+    }
+    viewFavourites = () => {
+        this.setState({viewFavourites: true})
+    }
+    closeFavourites = () => {
+        this.setState({viewFavourites: false})
     }
     render() { 
         // console.log(this.state.user.cred.password)
@@ -82,10 +93,20 @@ class Profile extends Component {
                     )
                     :
                     (
-                        <div className="container">
-                            {this.pageTitle()}
-                            {this.userCard()}
-                            {this.conditionalRedirects()}
+                        <div>
+                            {this.state.viewFavourites ?
+                                (
+                                    <MyFavourites closeFavourites={this.closeFavourites} userFavourites={this.state.userFavourites} />                                    
+                                )
+                                :
+                                (
+                                    <div className="container">
+                                        {this.pageTitle()}
+                                        {this.userCard()}
+                                        {this.conditionalRedirects()}
+                                    </div>
+                                )
+                            }
                         </div>  
                     )
                 }
@@ -154,6 +175,8 @@ class Profile extends Component {
                 </CardBody>
                 <CardFooter>Comfy Cook loves you :)</CardFooter>
             </Card>
+            <br/>
+            <Button outline color="success" onClick={this.viewFavourites}>go to favourites <FaHeart color="red"></FaHeart></Button>
         </div>;
     }
 
