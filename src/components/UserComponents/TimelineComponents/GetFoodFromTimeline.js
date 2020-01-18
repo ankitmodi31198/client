@@ -137,7 +137,7 @@ class GetFoodFromTimeline extends Component {
                 {this.state.food.ingredients.map((i, key) => (<li key={key}>{i.ing.name} <i>{i.quantity} {i.unit}</i></li>))}
             </ol>
             {this.state.food.servings ? (<b>Servings: {this.state.food.servings}</b>) : (null)}
-            <h5>Steps: </h5>
+            <h5>Steps : </h5>
             <ol>
                 {this.state.food.recipe.step ?
                     (<React.Fragment>
